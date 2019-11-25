@@ -1,0 +1,22 @@
+{
+  "name": "proto",
+  "version": "1.0.0",
+  "description": "Your payment processing application must interface with an old-school mainframe format that we've named \"MPS7\". This means consuming a proprietary binary protocol format that no one on your team is familiar with yet.",
+  "main": "proto.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "dotenv": "8.2.0"
+  },
+  "devDependencies": {
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "mocha": "6.2.2"
+  },
+  "scripts": {
+    "test": "mocha 'test/**Spec.js'"
+  },
+  "author": "",
+  "license": "ISC"
+}
