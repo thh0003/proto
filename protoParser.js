@@ -1,6 +1,10 @@
 const fs = require('fs').promises;
 
-// Proto Parser Parsers a binary data file
+/* 
+ Proto Parser Parsers a binary data file
+ 
+ Javascript Class which reads a binary data file and parses the contents
+*/
 class protoParser {
 
     constructor(fsPath){
@@ -16,7 +20,8 @@ class protoParser {
             fsCurLoc : 0,
             payload: [],
             rawData: null,
-            account: new Map()
+            account: new Map(),
+            endian: (process.env.ENDIAN=='BE')?true:false //BigEndian = true, LittleEndian=false
         };
         
     }
@@ -81,14 +86,14 @@ class protoParser {
                 curRecLeng = (type == 0 || type == 1)?21:13;
                 this.protoData.fsCurLoc = this.protoData.fsCurLoc + 1;
     
-                time = this.protoData.rawData.readUInt32BE(this.protoData.fsCurLoc);
+                time = (this.protoData.endian)?this.protoData.rawData.readUInt32BE(this.protoData.fsCurLoc):this.protoData.rawData.readUInt32LE(this.protoData.fsCurLoc);
                 this.protoData.fsCurLoc = this.protoData.fsCurLoc + 4;
     
-                user = this.protoData.rawData.readBigUInt64BE(this.protoData.fsCurLoc);
+                user = (this.protoData.endian)? this.protoData.rawData.readBigUInt64BE(this.protoData.fsCurLoc):this.protoData.rawData.readBigUInt64LE(this.protoData.fsCurLoc);
                 this.protoData.fsCurLoc = this.protoData.fsCurLoc + 8;
     
                 if (curRecLeng > 13){
-                    amount = this.protoData.rawData.readDoubleBE(this.protoData.fsCurLoc);
+                    amount = (this.protoData.endian)? this.protoData.rawData.readDoubleBE(this.protoData.fsCurLoc):this.protoData.rawData.readDoubleLE(this.protoData.fsCurLoc);
                     this.protoData.fsCurLoc = this.protoData.fsCurLoc + 8;
     
                 }
@@ -191,11 +196,12 @@ class protoParser {
         try{
             //Check Data is available
             if (this.protoData.rawData.length > 9){
+                
                 this.protoData.Magic = this.protoData.rawData.slice(this.protoData.fsCurLoc, 4).toString()
                 this.protoData.fsCurLoc = this.protoData.fsCurLoc + 4;
                 this.protoData.Version = this.protoData.rawData.readInt8(this.protoData.fsCurLoc);
                 this.protoData.fsCurLoc++;
-                this.protoData.Records =  this.protoData.rawData.readUInt32BE(this.protoData.fsCurLoc);
+                this.protoData.Records =  (this.protoData.endian)? this.protoData.rawData.readUInt32BE(this.protoData.fsCurLoc):this.protoData.rawData.readUInt32LE(this.protoData.fsCurLoc);
                 this.protoData.fsCurLoc = this.protoData.fsCurLoc + 4;
                 return true;
             } else {

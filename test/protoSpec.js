@@ -86,7 +86,7 @@ describe("Proto: Binary File Parser for Node", () => {
       await ProtoP.loadFile();
       await ProtoP.parseHeader();
       await ProtoP.parseData();
-      expect(ProtoP.gettotalCredit()).to.equal(10073.359933036814);
+      expect(ProtoP.gettotalCredit()).to.equal(9366.019984181883);
       expect(ProtoP.gettotalDebit()).to.equal(18203.69953340208);
       expect(ProtoP.getautopayEnds()).to.equal(8);
       expect(ProtoP.getautopayStarts()).to.equal(10);

@@ -1,66 +1,56 @@
 # Parse a custom protocol format
 
-Your payment processing application must interface with an old-school mainframe format that we've named "MPS7".
-This means consuming a proprietary binary protocol format that no one on your team is familiar with yet.
+A payment processing application that interfaces with an old-school mainframe format that named "MPS7".
+This means consuming a proprietary binary protocol format that no one is familiar with yet.
 
-## Task
+Solution:
+1) Creates an instance of the protoParser Class by calling "new protoP(<PATH TO THE DATA FILE>);"
+   a) The class creates an object called "protoData" which holds the current "State" of the application holds the following information:
+      (1) Magic - Binary file format
+      (2) Version - Format Version
+      (3) Records - Number of Records
+      (4) totalCredit - Total of all credit transactions
+      (5) totalDebit - Total of all Debit Transactions
+      (6) autopayStarts - total number of autopay starts
+      (7) autopayEnds - total number of autopay ends
+      (8) fsPath- path to the datafile
+      (9) fsCurLoc - current position in the buffer
+      (10) payload - An array of all the transactions in the file
+      (11) rawData - Buffer of the raw binary data
+      (12) account - Hash table of the user accounts which holds the user's balance and autopay setting
+2) Loads the binary data file into a buffer by calling "protoparser.loadFile();"
+3) Parses the header of the data file from the buffer by calling "protoparser.parseHeader();"
+   a) Verifing the format (MPS7), Version (1), and Number of Records (71)
+4) Parses the data of the binaryfile from the buffer by calling "protoparser.parseData();"
+   a) Parses thru the Buffer based on the specifications for each record and the number of records specified in the Header (fyi there where 72 total records in the file, but only 71 was specified in the header)
+   b) For each record it:
+      (1)  updates the User's Account by calling updateAccount (type, user, amount)
+      (2)  Totals for the file by calling updateTotals (type, amount)
+      (3)  enters each record into the "payload" array for future use
+   c) This takes linear time O(n)
+5) Displays the request information for the assignment by calling "protoparser.displayTotals();"
 
-You must write a program that reads in a transaction log, `txnlog.dat`, and parse it according to the
-specification in the **Notes** section below. Your program must answer the following 5 questions:
+Additional Functionality:
+1) Getters and Setters for the protoData object attributes
+2) userBalance (user) - takes a user id and returns the user's balance
+3) displayAllAccounts() - display's all user accounts to the console
 
-- What is the total amount in dollars of debits?
-- What is the total amount in dollars of credits?
-- How many autopays were started?
-- How many autopays were ended?
-- What is balance of user ID 2456938384156277127?
+Refactoring Ideas and Reusability Ideas:
+1) Adding reusability configuration settings in the .env or a configuration file which would allow the parser to be used for any binary data
+   a) Header specifications - Set the name, version, records
+   b) Record specifications - specifiy the size, type, of each field in the records
 
-Your program must output the answers in the format below. For example, if your program determined that the
-answer for each question was zero, your program would output:
 
-```
-total credit amount=0.00
-total debit amount=0.00
-autopays started=0
-autopays ended=0
-balance for user 2456938384156277127=0.00
-```
 
-You must supply your source code as part of your answer. Write your code in your
-best programming language. We'll want to compile your code from source and run it, so please include the
-complete instructions for doing so in a COMMENTS file.
+I have written the assignment using Javascript and Node.  To run the code follow the below steps:
+1) Install Node - Goto https://nodejs.org/en/download/ and download the appropriate version
+2) Unzip the source code into an empty directory
+3) Open a terminal
+4) Change Directory in to the source code directory
+5) enter 'npm install' (This will install the necessary dependencies)
+6) To run the code enter 'node proto.js'
+7) To run the test cases enter 'npm test'
 
-## Notes
-
-Because `txnlog.dat` is a binary file, it can't be read by a normal text editor like sublime or vim.
-Instead, you'll need to read it programatically and parse the data you read in from there.
-
-This is how the transaction log is structured:
-
-Header:
-
-| 4 byte magic string "MPS7" | 1 byte version | 4 byte (uint32) # of records |
-
-The header contains the canonical information about how the records should be processed.
-Note: there are fewer than 100 records in `txnlog.dat`.
-
-Record:
-
-| 1 byte record type enum | 4 byte (uint32) Unix timestamp | 8 byte (uint64) user ID |
-
-Record type enum:
-
-- 0x00: Debit
-- 0x01: Credit
-- 0x02: StartAutopay
-- 0x03: EndAutopay
-
-For Debit and Credit record types, there is an additional field, an 8 byte
-(float64) amount in dollars, at the end of the record.
-
-All multi-byte fields are encoded in network byte order.
-
-The first record in the file, when fully parsed, will have these values:
-
-| Record type | Unix timestamp | user ID             | amount in dollars |
-| ----------- | -------------- | ------------------- | ----------------- |
-| 'Debit'     | 1393108945     | 4136353673894269217 | 604.274335557087  |
+Configuration Note:
+1) In the file '.env' specify the location of the 'txnlog.dat' file.  Right now it located in the project root.
+2) Also specify the endianess of the data file
